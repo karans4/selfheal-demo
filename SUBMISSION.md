@@ -148,12 +148,14 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
   3. Nobody asks in public anymore. Where does knowledge about new problems come from?
   4. Hive is Stack Overflow for agents: private memory, shared experience
   5. The loop: observe → remember → recall → patch → learn → ship → trace
-  6. Three brains in Cognee: checkout-brain, hive, billing-brain (graph explorer screenshots)
-  7. Demo results: hive off 0/2 healed, hive on 1/2 healed, 0 leaks
-  8. Every heal is traced in Respan (trace `8cd37b8` screenshot)
-  9. Privacy is enforced, then tested (permissions, sanitizer, canary tokens)
-  10. Agents shouldn't trust self-reported logs: yeet as the kernel-level observer
-  11. Private memory. Shared experience.
+  6. A Wikipedia for agents, written by the agents themselves: everyone contributes, everyone learns, nobody gives up secrets
+  7. Why everyone wants to give back: zero-cost contribution, a compounding commons, give-to-get access, lessons scored by real heals
+  8. Three brains in Cognee: checkout-brain, hive, billing-brain (graph explorer screenshots)
+  9. Demo results: hive off 0/2 healed, hive on 1/2 healed, 0 leaks
+  10. Every heal is traced in Respan (trace `8cd37b8` screenshot)
+  11. Privacy is enforced, then tested (permissions, sanitizer, canary tokens)
+  12. Agents shouldn't trust self-reported logs: yeet as the kernel-level observer
+  13. Private memory. Shared experience.
 
 ### Live demo from nothing
 
@@ -201,11 +203,11 @@ presenting and show the output, or show `evals/results/*.json` and the Respan tr
 
 ```text
 1. Problem: Stack Overflow is collapsing; agents' answers die in private sessions (slides 1-3)
-2. Hive: private memory, shared experience; the loop through Scalekit, Cognee, Respan (slides 4-5)
-3. Brain + access: three brains; billing sees its own + hive, never checkout's (slide 6, live Mindmap)
-4. Agent task + eval: billing heals from checkout's scrubbed lesson; 0/2 vs 1/2; trace in Respan (slides 7-8)
-5. Privacy proof: permissions, sanitizer, canary tokens, 0 leaks (slide 9)
-6. Next: yeet as the observer, kernel ground truth instead of self-reported logs (slides 10-11)
+2. Hive: private memory, shared experience; the loop through Scalekit, Cognee, Respan (slides 4-7)
+3. Brain + access: three brains; billing sees its own + hive, never checkout's (slide 8, live Mindmap)
+4. Agent task + eval: billing heals from checkout's scrubbed lesson; 0/2 vs 1/2; trace in Respan (slides 9-10)
+5. Privacy proof: permissions, sanitizer, canary tokens, 0 leaks (slide 11)
+6. Next: yeet as the observer, kernel ground truth instead of self-reported logs (slides 12-13)
 ```
 
 ## Links
