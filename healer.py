@@ -210,7 +210,7 @@ def error_lines(logs: str) -> str:
     return "\n".join(l for l in logs.splitlines() if "ERROR" in l or "Traceback" in l or "Error" in l)[-1500:]
 
 
-async def heal(project: str, use_hive: bool = True, ship: bool = False) -> dict:
+async def heal(project: str, use_hive: bool = True, ship: bool = False, yes: bool = False) -> dict:
     from respan import propagate_attributes, workflow
 
     @workflow(name="self_heal")
@@ -245,7 +245,7 @@ async def heal(project: str, use_hive: bool = True, ship: bool = False) -> dict:
                 await remember(project, f"[incident {project}] {json.dumps(incident)}", ["source:incident"])
                 pattern = await contribute_to_hive(project, incident)
                 if ship:
-                    ship_fix(project, incident)
+                    ship_fix(project, incident, yes)
                 hive_hits = [m for m in memories if "[hive pattern:" in m]
                 leaked = [p for p in PROJECTS if p != project and any(canary(p) in m for m in memories)]
                 return {"project": project, "healed": True, "iterations": i, "hive_pattern": pattern,
@@ -278,7 +278,7 @@ def tool(name: str, args: dict, connection: str, identifier: str):
     actions = scalekit()
     ensure_authorized(actions, connection, identifier)
     return actions.execute_tool(tool_name=name, tool_input=args, connection_name=connection,
-                                identifier=identifier).data
+                                identifier=os.getenv("SCALEKIT_IDENTIFIER", identifier)).data
 
 
 async def runbook(from_fixtures: bool) -> None:
@@ -300,12 +300,12 @@ async def runbook(from_fixtures: bool) -> None:
         print(f"{p}: runbook ({len(msgs)} msgs) + code remembered privately")
 
 
-def ship_fix(project: str, incident: dict) -> None:
+def ship_fix(project: str, incident: dict, yes: bool = False) -> None:
     owner, repo, who = os.environ["GITHUB_OWNER"], os.environ["GITHUB_REPO"], PROJECTS[project]["user"]
     branch = f"heal/{project}-{int(time.time())}"
     summary = f"Self-heal {project}: {incident['diagnosis'][:200]}"
     print(f"\n--- would push {incident['file']} to {owner}/{repo}:{branch}, open PR, post #oncall-{project} as {who}\n{summary}")
-    if input("Ship it? [y/N] ").strip().lower() != "y":
+    if not yes and input("Ship it? [y/N] ").strip().lower() != "y":
         return print("skipped")
     base = tool("github_branch_get", {"owner": owner, "repo": repo, "branch": "main"}, GH, who)
     tool("github_branch_create", {"owner": owner, "repo": repo, "branch_name": branch,
@@ -365,6 +365,10 @@ def main() -> None:
     s.add_argument("fault", choices=FAULTS)
     s = sub.add_parser("restore")
     s.add_argument("project", choices=PROJECTS)
+    s = sub.add_parser("demo", help="break, deploy the bad config to main, heal, open the fix PR")
+    s.add_argument("project", choices=PROJECTS)
+    s.add_argument("fault", choices=FAULTS, nargs="?", default="codec")
+    s.add_argument("-y", "--yes", action="store_true", help="open the PR without asking")
     s = sub.add_parser("heal")
     s.add_argument("project", choices=PROJECTS)
     s.add_argument("-n", "--no-hive", action="store_true")
@@ -383,6 +387,20 @@ def main() -> None:
         print(observe(a.project)[1])
     elif a.cmd == "restore":
         restore(a.project)
+    elif a.cmd == "demo":
+        from respan import Respan
+
+        Respan(app_name="selfheal-hive")
+        restore(a.project)
+        break_service(a.project, a.fault)
+        print(error_lines(observe(a.project)[1]))
+        cfg = f"svc/{a.project}/config.json"
+        subprocess.run(["git", "add", cfg], cwd=ROOT, check=True)
+        subprocess.run(["git", "commit", "-qm", f"{a.project}: Bad deploy ({a.fault})"], cwd=ROOT, check=True)
+        subprocess.run(["git", "push", "-q"], cwd=ROOT, check=True)
+        print(f"deployed broken {cfg} to main")
+        res = asyncio.run(heal(a.project, True, True, a.yes))
+        print(json.dumps({k: res.get(k) for k in ("healed", "iterations")}))
     elif a.cmd == "heal":
         from respan import Respan
 
