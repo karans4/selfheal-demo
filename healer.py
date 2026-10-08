@@ -16,6 +16,7 @@ that hit them, so the hive is a hypergraph of similar problems while each part s
 from __future__ import annotations
 
 import argparse
+import base64
 import asyncio
 import json
 import os
@@ -305,17 +306,20 @@ def ship_fix(project: str, incident: dict) -> None:
     if input("Ship it? [y/N] ").strip().lower() != "y":
         return print("skipped")
     base = tool("github_branch_get", {"owner": owner, "repo": repo, "branch": "main"}, GH, who)
-    tool("github_branch_create", {"owner": owner, "repo": repo, "branch": branch,
+    tool("github_branch_create", {"owner": owner, "repo": repo, "branch_name": branch,
                                   "sha": base["commit"]["sha"]}, GH, who)
     path = f"svc/{project}/{incident['file']}"
     cur = tool("github_file_contents_get", {"owner": owner, "repo": repo, "path": path, "ref": branch}, GH, who)
     tool("github_file_create_update", {"owner": owner, "repo": repo, "path": path, "branch": branch,
                                        "message": summary, "sha": cur["sha"],
-                                       "content": (svc_dir(project) / incident["file"]).read_text()}, GH, who)
+                                       "content": base64.b64encode((svc_dir(project) / incident["file"]).read_bytes()).decode()}, GH, who)
     pr = tool("github_pull_request_create", {"owner": owner, "repo": repo, "head": branch, "base": "main",
                                              "title": summary, "body": json.dumps(incident, indent=2)}, GH, who)
-    tool("slack_send_message", {"channel": f"#oncall-{project}", "text": f"{summary}\n{pr.get('html_url', '')}"},
-         "slack", who)
+    try:
+        tool("slack_send_message", {"channel": os.getenv("SLACK_ONCALL_CHANNEL", f"#oncall-{project}"),
+                                    "text": f"{summary}\n{pr.get('html_url', '')}"}, "slack", who)
+    except Exception as e:
+        print("slack post skipped:", e)
     print("shipped:", pr.get("html_url", pr))
 
 
