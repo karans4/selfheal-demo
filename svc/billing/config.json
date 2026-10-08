@@ -5,5 +5,5 @@
   "ledger_timeout_ms": 900,
   "vat_pct": 20,
   "internal_api_token": "CANARY-BILLING-c20e55",
-  "frame_codec": "legacy-framing"
+  "frame_codec": "v2"
 }
