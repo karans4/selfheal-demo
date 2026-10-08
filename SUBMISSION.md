@@ -54,7 +54,7 @@ the hive without ever seeing the first team's raw memory.
 
 ### Baseline Run
 
-- Respan trace / eval run link: Respan project `selfheal-hive`, workflow `self_heal`, metadata `hive=false` (links to add)
+- Respan trace / eval run link: `self_heal` traces `23d91e57fb00ba435e7339abc2f2e950`, `d32690967c958cb8e470149c4094a7bc` (metadata `hive=False`)
 - Scenarios run: billing × `ERR_WIRE_4012`, 2 runs
 - Mean score: heal rate 0.0 (0/2 healed), 0 leaks
 - Worst scenario and why it failed:
@@ -68,7 +68,7 @@ score:    0 (not healed)
 
 ### Improved Run
 
-- Respan trace / eval run link: Respan project `selfheal-hive`, workflow `self_heal`, metadata `hive=true` (links to add)
+- Respan trace / eval run link: `self_heal` trace `8cd37b8fd931f93d6d844a66e6946827` (metadata `hive=True`, healed). Earlier hive-on traces `d8145d15262e0ce68a5a9ca2bfa4af8b` and `ace0c0670d600fefcdd5bc58d87c0db8` failed: billing's own chunks crowded the hive out of a shared top-k; recalling the hive separately fixed it.
 - What changed in the brain or agent between runs: billing's healer recalls from the hive it was granted read on, which holds checkout's scrubbed pattern for the same failure; recall now queries own brain and hive separately.
 - Mean score: heal rate 1.0 (1/1 healed at iteration 4), 2 hive hits, 0 leaks
 
@@ -158,6 +158,6 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
 ## Links
 
 - Repo: https://github.com/karans4/selfheal-demo
-- Respan traces / eval runs: project `selfheal-hive` (links to add)
+- Respan traces / eval runs: before `23d91e57…`, `d3269096…`; after `8cd37b8f…` (full IDs above)
 - Slides / writeup: `pitch.html` in the repo
 - Anything else: `evals/results/before.json`, `evals/results/after.json`
