@@ -71,3 +71,19 @@ on-call user, project and hive on/off.
 |---|---|---|---|---|
 | before | hive off | 0/2 | 4 (all failed) | 0 |
 | after | hive on | 1/2 | 4 (healed run) | 0 |
+
+## Observing with yeet (kernel ground truth)
+
+By default the healer judges a service by its own logs and HTTP status. With `OBSERVER=yeet` it
+instead runs the service on a yeet Linux host (a Lima VM, `YEET_VM`, default `yeet.debian-13`) and
+reads the service's HTTP responses straight off the wire with eBPF, using the TCX probe from the
+public [`yeet-src/httpinspect`](https://github.com/yeet-src/httpinspect) (cloned at run time;
+`observer/observe.sh` raises its response snap length so the error body is visible). A heal only
+counts when the kernel sees 2xx responses; the app's own logs are ignored.
+
+```bash
+OBSERVER=yeet .venv/bin/python healer.py heal billing
+```
+
+Example kernel observation fed to the healer:
+`ERROR yeet kernel saw HTTP 500 x59 from :8098/billing {"error": "ERR_WIRE_4012 frame rejected by peer"}`

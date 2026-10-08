@@ -62,7 +62,34 @@ def canary(project: str) -> str:
 
 # --- Service under observation ----------------------------------------------
 
+OBSERVER = os.getenv("OBSERVER", "logs")  # "yeet": kernel ground truth from the yeet VM
+YEET_VM = os.getenv("YEET_VM", "yeet.debian-13")
+
+
 def observe(project: str) -> tuple[bool, str]:
+    return observe_yeet(project) if OBSERVER == "yeet" else observe_logs(project)
+
+
+def observe_yeet(project: str) -> tuple[bool, str]:
+    """Run the service on a yeet host and read its HTTP responses off the wire with eBPF.
+    Healthy only if the kernel saw responses and every one was a 2xx; the app's own logs are ignored."""
+    port, path = config(project)["port"], PROJECTS[project]["path"]
+    cmd = f"{ROOT}/observer/observe.sh {svc_dir(project)} {port} {path}"
+    out = subprocess.run(["limactl", "shell", YEET_VM, "--", "bash", "-lc", cmd],
+                         capture_output=True, text=True, timeout=180).stdout
+    seen: dict[tuple, int] = {}
+    for line in out.splitlines():
+        if line.startswith("{"):
+            ev = json.loads(line)
+            key = (ev.get("status"), ev.get("body", ""))
+            seen[key] = seen.get(key, 0) + 1
+    healthy = bool(seen) and all(st and 200 <= st < 300 for st, _ in seen)
+    report = [f"{'INFO' if st and st < 400 else 'ERROR'} yeet kernel saw HTTP {st} x{n} from :{port}{path} {body}"
+              for (st, body), n in sorted(seen.items(), key=lambda kv: -kv[1])]
+    return healthy, "\n".join(report) or f"ERROR yeet kernel saw no HTTP responses from :{port}{path}"
+
+
+def observe_logs(project: str) -> tuple[bool, str]:
     """Start the service, hit it, stop it. Returns (healthy, log text)."""
     d = svc_dir(project)
     proc = subprocess.Popen([sys.executable, "app.py"], cwd=d, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

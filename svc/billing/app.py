@@ -62,8 +62,9 @@ class Handler(BaseHTTPRequestHandler):
     def reply(self, code: int, body: dict):
         self.send_response(code)
         self.send_header("content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(json.dumps(body).encode())
+        # Head and body in one write, so the response is a single segment on the wire.
+        self._headers_buffer.append(b"\r\n" + json.dumps(body).encode())
+        self.flush_headers()
 
 
 if __name__ == "__main__":
