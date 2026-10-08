@@ -77,6 +77,12 @@ Before:  mean = 0.0   (n = 2 runs, heal rate)
 After:   mean = 0.5   (n = 2 runs, heal rate)
 ```
 
+### Follow-up change: hive lessons first
+
+The healer recalled the right hive lesson but sometimes guessed instead of applying it (2/5 hive-on runs healed).
+Change: hive lessons are put first in the prompt, and the healer must apply an exact value from a matching
+lesson before guessing. Next run: **healed at iteration 1** (Respan trace `05ee1a95e15219bf425ed3d2d65584d5`). Single run; not yet re-measured at scale.
+
 ## Access Story
 
 Two users, the same question, different results — then a grant.

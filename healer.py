@@ -201,6 +201,7 @@ def llm():
 SYSTEM = """You are an on-call healer for one service. You see its failing logs, its config.json and app.py,
 and memories (its own past incidents, its runbook, and abstract [hive pattern:...] lessons from other teams).
 Find the root cause and fix it by editing config.json ONLY; app.py is read-only and its checks are correct.
+If a [hive pattern:...] matches this error and names the value that fixed it, apply that exact value first: it was verified by another team. Do not guess values when a hive lesson gives one.
 Reply JSON {"diagnosis": "...", "used_memory": ["<pattern or incident ids you relied on>"],
 "file": "config.json", "content": "<full new file content>"}"""
 
@@ -222,6 +223,7 @@ async def heal(project: str, use_hive: bool = True, ship: bool = False) -> dict:
         attempts = []
         for i in range(1, MAX_ITERS + 1):
             memories = await recall(project, first_error, use_hive)
+            memories.sort(key=lambda m: "[hive pattern:" not in m)  # hive lessons first
             d = svc_dir(project)
             r = llm().chat.completions.create(model=MODEL, response_format={"type": "json_object"}, messages=[
                 {"role": "system", "content": SYSTEM},
