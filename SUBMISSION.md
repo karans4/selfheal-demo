@@ -142,22 +142,75 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
 
 ## Demo
 
-- Live demo link or local instructions: `pitch.html` (open in a browser) + `healer.py break billing codec && healer.py heal billing`
+- Slides: [`pitch.html`](https://github.com/karans4/selfheal-demo/blob/main/pitch.html) (one self-contained file; download and open, arrow keys to navigate). Slides:
+  1. Agents learned to code from Stack Overflow. Then they killed it.
+  2. Stack Overflow questions per month (chart, ~200k peak in 2014 to ~1k/month in mid-2026)
+  3. Nobody asks in public anymore. Where does knowledge about new problems come from?
+  4. Hive is Stack Overflow for agents: private memory, shared experience
+  5. The loop: observe → remember → recall → patch → learn → ship → trace
+  6. Three brains in Cognee: checkout-brain, hive, billing-brain (graph explorer screenshots)
+  7. Demo results: hive off 0/2 healed, hive on 1/2 healed, 0 leaks
+  8. Every heal is traced in Respan (trace `8cd37b8` screenshot)
+  9. Privacy is enforced, then tested (permissions, sanitizer, canary tokens)
+  10. Agents shouldn't trust self-reported logs: yeet as the kernel-level observer
+  11. Private memory. Shared experience.
+
+### Live demo from nothing
+
+```bash
+# 1. Setup (~2 min + model time)
+git clone https://github.com/karans4/selfheal-demo && cd selfheal-demo
+uv venv -p 3.12 && uv pip install "cognee>=1.6.3" scalekit-sdk-python python-dotenv openai respan-ai
+cp .env.example .env     # set RESPAN/LLM/EMBEDDING keys (one Respan key), absolute SYSTEM_ROOT_DIRECTORY / DATA_ROOT_DIRECTORY
+mkdir -p .cognee_system/databases .cognee_data
+
+# 2. Build the brains (~5 min, mostly Cognee)
+.venv/bin/python healer.py setup          # 3 users: two private brains + hive with read grants
+.venv/bin/python healer.py runbook -f     # each team's Slack runbook + code into its private brain
+.venv/bin/python healer.py seed           # checkout's past ERR_WIRE_4012 incident -> scrubbed pattern in the hive
+
+# 3. Break billing and show it fails (instant)
+.venv/bin/python healer.py break billing codec    # GET /billing 500 RuntimeError: ERR_WIRE_4012
+
+# 4. Heal without the hive, then with it (~2-5 min each)
+.venv/bin/python healer.py heal billing --no-hive  # guesses codecs, does not heal
+.venv/bin/python healer.py restore billing && .venv/bin/python healer.py break billing codec
+.venv/bin/python healer.py heal billing            # recalls the hive pattern, sets the codec, HEALED
+
+# 5. Show the evidence
+#    Respan: Logs -> Traces, open the latest self_heal trace (customer = oncall-billing@yeet.dev)
+.venv/bin/python .venv/bin/cognee-cli -ui          # http://localhost:3000 -> Mindmap
+```
+
+In the Cognee UI the login form can stay on `default_user`, who owns no datasets. To view a team's brain, log in
+against the local API as that user (local demo password `hackathon-pw`), e.g. from the browser console on
+localhost:3000:
+
+```js
+await fetch("http://localhost:8000/api/v1/auth/login", {method: "POST", credentials: "include",
+  body: new URLSearchParams({username: "oncall-billing@yeet.dev", password: "hackathon-pw"})})
+```
+
+Reload Mindmap: the brain dropdown shows `billing-brain` (personal) and `hive` (team) only. Repeat with
+`oncall-checkout@yeet.dev` to show `checkout-brain` + `hive`. Neither team can open the other's brain.
+
+Heals take minutes because every step goes through Cognee and the gateway, so on stage run step 4 before
+presenting and show the output, or show `evals/results/*.json` and the Respan traces.
+
 - 3-minute pitch outline:
 
 ```text
-1. Problem: Stack Overflow is collapsing; agents' answers die in private sessions
-2. Pull: each team's #oncall runbook (Slack) + code (GitHub) via Scalekit
-3. Brain: private brain per team + the hive (cognee-cli -ui graph)
-4. Access: billing can't read checkout; gets checkout's scrubbed lesson through the hive; 0 canary leaks
-5. Agent task: live heal of billing, traced in Respan
-6. Eval: hive off 0/2 healed vs hive on 1/2 healed
-7. Next: yeet as the observer (kernel ground truth instead of self-reported logs); more teams, more patterns
+1. Problem: Stack Overflow is collapsing; agents' answers die in private sessions (slides 1-3)
+2. Hive: private memory, shared experience; the loop through Scalekit, Cognee, Respan (slides 4-5)
+3. Brain + access: three brains; billing sees its own + hive, never checkout's (slide 6, live Mindmap)
+4. Agent task + eval: billing heals from checkout's scrubbed lesson; 0/2 vs 1/2; trace in Respan (slides 7-8)
+5. Privacy proof: permissions, sanitizer, canary tokens, 0 leaks (slide 9)
+6. Next: yeet as the observer, kernel ground truth instead of self-reported logs (slides 10-11)
 ```
 
 ## Links
 
 - Repo: https://github.com/karans4/selfheal-demo
 - Respan traces / eval runs: before `23d91e57…`, `d3269096…`; after `8cd37b8f…` (full IDs above)
-- Slides / writeup: `pitch.html` in the repo
+- Slides / writeup: https://github.com/karans4/selfheal-demo/blob/main/pitch.html
 - Anything else: `evals/results/before.json`, `evals/results/after.json`
