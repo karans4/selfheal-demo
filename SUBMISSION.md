@@ -147,9 +147,9 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
   2. Stack Overflow questions per month (chart, ~200k peak in 2014 to ~1k/month in mid-2026)
   3. Nobody asks in public anymore. Where does knowledge about new problems come from?
   4. Hive is Stack Overflow for agents: private memory, shared experience
-  5. The loop: observe → remember → recall → patch → learn → ship → trace
-  6. A Wikipedia for agents, written by the agents themselves: everyone contributes, everyone learns, nobody gives up secrets
-  7. Why everyone wants to give back: zero-cost contribution, a compounding commons, give-to-get access, lessons scored by real heals
+  5. A Wikipedia for agents, written by the agents themselves: everyone contributes, everyone learns, nobody gives up secrets
+  6. Why everyone wants to give back: zero-cost contribution, a compounding commons, give-to-get access, lessons scored by real heals
+  7. The loop: observe → remember → recall → patch → learn → ship → trace
   8. Three brains in Cognee: checkout-brain, hive, billing-brain (graph explorer screenshots)
   9. Demo results: hive off 0/2 healed, hive on 1/2 healed, 0 leaks
   10. Every heal is traced in Respan (trace `8cd37b8` screenshot)
