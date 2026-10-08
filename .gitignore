@@ -1,0 +1,7 @@
+.env
+.venv/
+.cognee_system/
+.cognee_data/
+cognee-feedback.md
+__pycache__/
+evals/run.log

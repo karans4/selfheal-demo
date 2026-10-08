@@ -1,0 +1,9 @@
+{
+  "port": 8098,
+  "ccy": "EUR",
+  "pg_connections": 6,
+  "ledger_timeout_ms": 900,
+  "vat_pct": 20,
+  "internal_api_token": "CANARY-BILLING-c20e55",
+  "frame_codec": "legacy-framing"
+}

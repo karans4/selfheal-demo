@@ -1,0 +1,4 @@
+{"messages": [
+ {"user": "karan", "text": "billing settles in EUR by default; finance wants ccy changes announced here first."},
+ {"user": "karan", "text": "pg_connections is sized for 6 workers, do not raise past 20 without DBA review."}
+]}

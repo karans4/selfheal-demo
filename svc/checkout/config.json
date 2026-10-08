@@ -1,0 +1,9 @@
+{
+  "port": 8099,
+  "currency": "USD",
+  "db_pool_size": 4,
+  "upstream_timeout_ms": 800,
+  "tax_rate_pct": 8,
+  "internal_api_token": "CANARY-CHECKOUT-7f3a91",
+  "wire_codec": "legacy-framing"
+}

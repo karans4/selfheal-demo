@@ -1,0 +1,4 @@
+{"messages": [
+ {"user": "karan", "text": "checkout talks to the inventory upstream; p50 is ~120ms so upstream_timeout_ms must stay well above that (we run 800)."},
+ {"user": "karan", "text": "Reminder: internal_api_token lives in config.json, never paste it in tickets."}
+]}

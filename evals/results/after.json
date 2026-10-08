@@ -1,0 +1,45 @@
+{
+  "label": "after",
+  "hive": true,
+  "heal_rate": 1.0,
+  "billing_mean_iters": 4.0,
+  "billing_hive_hits": 2,
+  "leaks": 0,
+  "rows": [
+    {
+      "fault": "codec",
+      "project": "billing",
+      "healed": true,
+      "iterations": 4,
+      "hive_pattern": "[hive pattern:frame-rejected-by-peer-wire-codec-mismatch] symptom: API/RPC request returns HTTP 500 with runtime error 'ERR_WIRE_4012 frame rejected by peer'. Logs show repeated 'frame rejected by peer' failures across attempts. Symptom class: peer-level frame rejection indicating a wire-protocol/codec incompatibility. | root cause: A wire-framing codec mismatch between the local service and the remote peer caused the peer to reject incoming frames (checksum/signature validation failed \u2014 e.g., SHA1 check). Root-cause class: protocol/format incompatibility introduced by a configuration or deployment change that switched the active wire codec. | fix: Immediate: revert the service's wire-framing codec configuration to the compatible/legacy codec so the peer will accept frames (this restores the SHA1-based checksum validation). Reload or restart the process to pick up the config, then retry the call and confirm ERR_WIRE_4012 no longer appears. Follow-ups: add deploy-time compatibility checks and CI tests for wire-protocol versions, pin or negotiate codec versions explicitly, and add alerting/metrics for ERR_WIRE_4012 to detect regressions early.",
+      "hive_hits": 2,
+      "leaked_from": [],
+      "attempts": [
+        {
+          "iteration": 1,
+          "diagnosis": "Peer rejected our frames due to a framing/codec mismatch: the service is configured with frame_codec \"v2\" which does not match the codec expected by the ledger peer, causing the ERR_WIRE_4012 error. Immediate remediation is to restore the legacy/compatible codec so frames are accepted by the peer.",
+          "file": "config.json",
+          "healed": false
+        },
+        {
+          "iteration": 2,
+          "diagnosis": "Peer rejected frames due to a wire/codec mismatch (ERR_WIRE_4012). The service is sending frames the ledger doesn't accept; immediate fix is to restore the legacy framing codec so the peer will accept frames.",
+          "file": "config.json",
+          "healed": false
+        },
+        {
+          "iteration": 3,
+          "diagnosis": "Peer rejected frames due to a wire/framing codec mismatch (ERR_WIRE_4012). The service was configured with the wrong frame_codec; restore the codec expected by the ledger peer so frames are accepted. I reverted the frame_codec to the compatible value (v1) to restore protocol compatibility.",
+          "file": "config.json",
+          "healed": false
+        },
+        {
+          "iteration": 4,
+          "diagnosis": "Peer is rejecting frames during billing because the service is using an incompatible wire framing codec. This matches the hive pattern 'frame-rejected-by-peer-wire-codec-mismatch' \u2014 immediate remediation is to restore the legacy/compatible codec so the ledger peer will accept frames. I changed the frame_codec to the legacy codec value so the SHA1 check in app.py should pass and the billing call will proceed.",
+          "file": "config.json",
+          "healed": true
+        }
+      ]
+    }
+  ]
+}
