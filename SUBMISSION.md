@@ -28,7 +28,7 @@ the hive without ever seeing the first team's raw memory.
 - Connections created (`connection_name` → app): `slack` → Slack, `github-connect` → GitHub (both ACTIVE for `karan@yeet.cx`)
 - Tools called: `slack_fetch_conversation_history`, `github_file_contents_get`; write-back path: `github_branch_get`, `github_branch_create`, `github_file_create_update`, `github_pull_request_create`, `slack_send_message`
 - How users are identified (`identifier` ↔ Cognee user): each on-call user is a Cognee user; Scalekit calls use their `identifier` (`SCALEKIT_IDENTIFIER` overrides it for the demo account)
-- Any write-back actions: `heal --ship` pushes the fix to a branch, opens a PR and posts to `#oncall-<project>` as the on-call user, behind a y/N human confirm. Not exercised in the recorded runs.
+- Any write-back actions: `heal --ship` pushes the fix to a branch, opens a PR and posts to `#oncall-<project>` as the on-call user, behind a y/N human confirm. Wired and parameter-checked against Scalekit's tool schemas; not executed, because the one `--ship` run did not heal.
 - Code entry point: `healer.py` → `runbook()`, `ship_fix()`. The eval uses the recorded pull in `fixtures/slack` (`runbook -f`); a live `github_file_contents_get` call through Scalekit was verified separately.
 
 ### Remember — Cognee
@@ -70,11 +70,11 @@ score:    0 (not healed)
 
 - Respan trace / eval run link: `self_heal` trace `8cd37b8fd931f93d6d844a66e6946827` (metadata `hive=True`, healed). Earlier hive-on traces `d8145d15262e0ce68a5a9ca2bfa4af8b` and `ace0c0670d600fefcdd5bc58d87c0db8` failed: billing's own chunks crowded the hive out of a shared top-k; recalling the hive separately fixed it.
 - What changed in the brain or agent between runs: billing's healer recalls from the hive it was granted read on, which holds checkout's scrubbed pattern for the same failure; recall now queries own brain and hive separately.
-- Mean score: heal rate 1.0 (1/1 healed at iteration 4), 2 hive hits, 0 leaks
+- Mean score: heal rate 0.5 (1/2 healed; the healed run fixed it at iteration 4 with 2 hive hits; a second live run with `--ship` did not heal in 4 iterations, so nothing was shipped), 0 leaks
 
 ```text
 Before:  mean = 0.0   (n = 2 runs, heal rate)
-After:   mean = 1.0   (n = 1 run, heal rate)
+After:   mean = 0.5   (n = 2 runs, heal rate)
 ```
 
 ## Access Story
@@ -87,7 +87,7 @@ Two users, the same question, different results — then a grant.
 - Result for A: its own past incident has the fix (checkout fixed this before)
 - Result for B before the share: no relevant memory; 0/2 healed
 - The grant (who shared what with whom, which permission): `hive@` granted `read` on `hive` to `oncall-billing`; checkout's raw incident in `checkout-brain` stays unreadable to billing
-- Result for B after the share: healed from the scrubbed hive pattern; no checkout canary token in billing's recalled context (leaks = 0)
+- Result for B after the share: healed from the scrubbed hive pattern in 1 of 2 runs; no checkout canary token in billing's recalled context (leaks = 0)
 
 ## Architecture
 
@@ -151,7 +151,7 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
 3. Brain: private brain per team + the hive (cognee-cli -ui graph)
 4. Access: billing can't read checkout; gets checkout's scrubbed lesson through the hive; 0 canary leaks
 5. Agent task: live heal of billing, traced in Respan
-6. Eval: hive off 0/2 healed vs hive on 1/1 healed
+6. Eval: hive off 0/2 healed vs hive on 1/2 healed
 7. Next: yeet as the observer (kernel ground truth instead of self-reported logs); more teams, more patterns
 ```
 

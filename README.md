@@ -70,4 +70,4 @@ on-call user, project and hive on/off.
 | Run | Change | heal_rate | billing_mean_iters | leaks |
 |---|---|---|---|---|
 | before | hive off | 0/2 | 4 (all failed) | 0 |
-| after | hive on | 1/1 | 4 | 0 |
+| after | hive on | 1/2 | 4 (healed run) | 0 |
