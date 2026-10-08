@@ -152,10 +152,11 @@ the services and faults are local (`svc/`). Only a Respan (or OpenAI-compatible)
   7. The loop: observe → remember → recall → patch → learn → ship → trace
   8. Three brains in Cognee: checkout-brain, hive, billing-brain (graph explorer screenshots)
   9. Demo results: hive off 0/2 healed, hive on 1/2 healed, 0 leaks
-  10. Every heal is traced in Respan (trace `8cd37b8` screenshot)
-  11. Privacy is enforced, then tested (permissions, sanitizer, canary tokens)
-  12. Agents shouldn't trust self-reported logs: yeet as the kernel-level observer
-  13. Private memory. Shared experience.
+  10. Live run video (`demo.mp4`, 2 min, idle wait cut; this take did not heal)
+  11. Every heal is traced in Respan (trace `8cd37b8` screenshot)
+  12. Privacy is enforced, then tested (permissions, sanitizer, canary tokens)
+  13. Agents shouldn't trust self-reported logs: yeet as the kernel-level observer
+  14. Private memory. Shared experience.
 
 ### Live demo from nothing
 
